@@ -11,14 +11,18 @@ class Player(models.Model):
     def __str__(self):
         return self.name
 
+    @property
+    def current_tradeinfo(self):
+        return self.tradeinfo_set.get(date_leaved__isnull = True)
+
 
 class Club(models.Model):
     name = models.CharField(max_length = 40)
     players = models.ManyToManyField(
         Player,
         through = 'TradeInfo',
-        through_fields = ('club', 'player'),
-        related_name = "%(app_label)s_%(class)s_related",
+        through_fields = ('club', 'player',),
+        # related_name = "%(app_label)s_%(class)s_related",
     )
 
     # current_club 프로퍼티에 현재 속하는 Club 리턴
@@ -36,8 +40,6 @@ class Club(models.Model):
     def squad(self, year = None):
         if year is None:
             year = timezone.now().year
-        else:
-            pass
         player_list = self.players.filter(
             Q(tradeinfo__date_joined__year__lte = year),
             (Q(tradeinfo__date_leaved__gte = date(year, 12, 31)) |
@@ -54,57 +56,53 @@ class TradeInfo(models.Model):
     # 2. recommender 와 prev_club(이전 클럽)을 활성화시키고 Club 의 MTM 필드에 through_fields 를 명시
     recommender = models.ForeignKey(
         Player,
-        on_delete = models.CASCADE,
+        # 히스토리이므로 지울 수 없게 한다.
+        on_delete = models.PROTECT,
         null = True,
         blank = True,
-        related_name = 'trade_recommender',
+        related_name = 'tradeinfo_set_by_recommender',
     )
     prev_club = models.ForeignKey(
         Club,
-        on_delete = models.CASCADE,
+        # 히스토리이므로 지울 수 없게 한다.
+        on_delete = models.PROTECT,
         null = True,
         blank = True,
-        related_name = 'trade_prev_club')
+        # related_name = 'tradeinfo_set_by_prev_club',
+        # 이름을 정하지 않는 경우. 'prev_club'의 데이터로는 역참조가 불가능해진다.
+        related_name = '+'
+    )
 
     def __str__(self):
-        return 'Player {} is joined club {} at {}.\nAnd left the club at {}'.format(
+        return '{} : {} ( {} ~ {} )'.format(
             self.player,
             self.club,
             self.date_joined,
-            self.date_leaved,
+            # self.date_leaved if self.date_leaved else 'Present',
+            self.date_leaved or 'Present',
         )
-
-    # current_tradeinfo 프로퍼티에 현재 자신의 TradeInfo 리턴
-    @property
-    def current_tradeinfo(self):
-        if self.date_leaved:
-            return print('Player {} is joined club {} at {}.\nAnd left the club at {}'.format(
-                self.player,
-                self.club,
-                self.date_joined,
-                self.date_leaved,
-            ))
-        else:
-            return print('Player {} is joined club {} at {}.\nAnd never left.'.format(
-                self.player,
-                self.club,
-                self.date_joined,
-            ))
-            # prev_club = 이전 Club
 
     # 1. property 로 is_current 속성이 TradeInfo 가 현재 현직(leaved 하지 않았는지)여부 반환
     @property
     def is_current(self):
-        if self.date_leaved:
-            return print('Player {} is joined club {} at {}.\nAnd left the club at {}'.format(
-                self.player,
-                self.club,
-                self.date_joined,
-                self.date_leaved,
-            ))
-        else:
-            return print('Player {} is joined club {} at {}.\nAnd never left.'.format(
-                self.player,
-                self.club,
-                self.date_joined,
-            ))
+        return self.date_leaved is None
+
+    # current_tradeinfo 프로퍼티에 현재 자신의 TradeInfo 리턴
+    # @property
+    # def current_tradeinfo(self):
+    #     if self.date_leaved:
+    #         return print('Player {} is joined club {} at {}.\nAnd left the club at {}'.format(
+    #             self.player,
+    #             self.club,
+    #             self.date_joined,
+    #             self.date_leaved,
+    #         ))
+    #     else:
+    #         return print('Player {} is joined club {} at {}.\nAnd never left.'.format(
+    #             self.player,
+    #             self.club,
+    #             self.date_joined,
+    #         ))
+            # prev_club = 이전 Club
+
+
