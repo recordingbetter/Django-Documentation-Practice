@@ -37,6 +37,7 @@ class Club(models.Model):
         # 인수로 년도(2017, 2015...등)를 받아
         # 해당 년도의 현직 선수들을 리턴,
         # 주어지지 않으면 현재를 기준으로 함
+
     def squad(self, year = None):
         if year is None:
             year = timezone.now().year
@@ -87,22 +88,20 @@ class TradeInfo(models.Model):
     def is_current(self):
         return self.date_leaved is None
 
-    # current_tradeinfo 프로퍼티에 현재 자신의 TradeInfo 리턴
-    # @property
-    # def current_tradeinfo(self):
-    #     if self.date_leaved:
-    #         return print('Player {} is joined club {} at {}.\nAnd left the club at {}'.format(
-    #             self.player,
-    #             self.club,
-    #             self.date_joined,
-    #             self.date_leaved,
-    #         ))
-    #     else:
-    #         return print('Player {} is joined club {} at {}.\nAnd never left.'.format(
-    #             self.player,
-    #             self.club,
-    #             self.date_joined,
-    #         ))
-            # prev_club = 이전 Club
-
-
+        # current_tradeinfo 프로퍼티에 현재 자신의 TradeInfo 리턴
+        # @property
+        # def current_tradeinfo(self):
+        #     if self.date_leaved:
+        #         return print('Player {} is joined club {} at {}.\nAnd left the club at {}'.format(
+        #             self.player,
+        #             self.club,
+        #             self.date_joined,
+        #             self.date_leaved,
+        #         ))
+        #     else:
+        #         return print('Player {} is joined club {} at {}.\nAnd never left.'.format(
+        #             self.player,
+        #             self.club,
+        #             self.date_joined,
+        #         ))
+        # prev_club = 이전 Club
