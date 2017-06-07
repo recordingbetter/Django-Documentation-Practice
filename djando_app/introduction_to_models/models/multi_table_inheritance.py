@@ -5,6 +5,9 @@ class CommonInfo2(models.Model):
     name = models.CharField(max_length = 100)
     age = models.PositiveIntegerField()
 
+    def __str__(self):
+        return self.name
+
     class Meta:
         ordering = ('-name',)
         db_table = 'introduction_to_models_mti_commoninfo2'
@@ -12,6 +15,12 @@ class CommonInfo2(models.Model):
 
 class Student2(CommonInfo2):
     home_group = models.CharField(max_length = 5)
+    extra_info = models.ForeignKey(
+        CommonInfo2,
+        related_name = 'extra_students',
+        null = True,
+        blank = True,
+    )
 
     def __str__(self):
         return 'HomeGroup {}\'s student({}, {}) pk={}'.format(
